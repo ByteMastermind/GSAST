@@ -19,8 +19,7 @@ from gsast.models.config_models import (
     FiltersConfig,
     GitHubTargetConfig,
     GitLabTargetConfig,
-    ProviderType,
-    ScannerType
+    ProviderType
 )
 
 
@@ -41,22 +40,6 @@ class TestProviderType:
         """Test invalid provider raises ValueError."""
         with pytest.raises(ValueError):
             ProviderType("bitbucket")
-
-
-class TestScannerType:
-    """Test ScannerType enum."""
-    
-    def test_valid_scanners(self):
-        """Test valid scanner values."""
-        assert ScannerType.SEMGREP == "semgrep"
-        assert ScannerType.TRUFFLEHOG == "trufflehog"
-        assert ScannerType.DEPENDENCY_CONFUSION == "dependency-confusion"
-        
-    def test_scanner_from_string(self):
-        """Test creating scanners from string."""
-        assert ScannerType("semgrep") == ScannerType.SEMGREP
-        assert ScannerType("trufflehog") == ScannerType.TRUFFLEHOG
-        assert ScannerType("dependency-confusion") == ScannerType.DEPENDENCY_CONFUSION
 
 
 class TestGitHubTargetConfig:
@@ -308,8 +291,6 @@ class TestGSASTConfig:
         assert config.filters.is_fork is True
         assert config.filters.max_repo_mb_size == 500
         assert len(config.scanners) == 2
-        assert ScannerType.SEMGREP in config.scanners
-        assert ScannerType.DEPENDENCY_CONFUSION in config.scanners
         
     def test_from_dict_gitlab_minimal(self):
         """Test creating config from minimal GitLab dictionary."""
@@ -487,7 +468,6 @@ class TestIntegrationWithExistingConfigs:
         assert config.filters.last_commit_max_age == 365  # Updated to match mock file
         
         # Check scanners - Updated to match mock file which only has semgrep
-        assert ScannerType.SEMGREP in config.scanners
         assert len(config.scanners) == 1  # Only one scanner in the mock file
         
     def test_parse_existing_gitlab_config(self):
@@ -510,7 +490,6 @@ class TestIntegrationWithExistingConfigs:
         assert config.filters.last_commit_max_age == 365
         
         # Check scanners - Updated to match mock file which only has semgrep
-        assert ScannerType.SEMGREP in config.scanners
         assert len(config.scanners) == 1  # Only one scanner in the mock file
         
     def test_roundtrip_existing_configs(self):

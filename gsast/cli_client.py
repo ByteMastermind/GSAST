@@ -4,7 +4,7 @@ import os
 import requests
 import glob
 from urllib.parse import urlencode
-from models.config_models import GSASTConfig, ProviderType, TargetConfig, FiltersConfig, ScannerType
+from models.config_models import GSASTConfig
 
 DEFAULT_CONFIG_FILE_PATH = os.path.join(os.path.expanduser('~'), '.gsast.json')
 
