@@ -79,6 +79,7 @@ def convert_trufflehog_to_sarif(json_path: Path) -> Path:
     )
 
     sarif_template = {
+        "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/cos02/schemas/sarif-schema-2.1.0.json",
         "version": "2.1.0",
         "runs": [
             {

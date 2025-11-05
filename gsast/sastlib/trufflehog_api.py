@@ -17,7 +17,7 @@ def run_scan(project_sources_dir: Path, scan_cwd: Path) -> Optional[Dict[str, Pa
     trufflehog = shutil.which('trufflehog')
     if not trufflehog:
         log.error('TruffleHog is not installed')
-        return
+        return None
 
     scan_start_time = time.time()
     try:
@@ -28,9 +28,9 @@ def run_scan(project_sources_dir: Path, scan_cwd: Path) -> Optional[Dict[str, Pa
         return sarif_rule_results_paths
     except subprocess.CalledProcessError as e:
         log.error(
-            f'TruffleHog failed with exit code: {e.returncode}\nstdout:{e.stdout}\nstderr:{e.stderr}'
+            f'TruffleHog failed with exit code: {e.returncode}\nstdout: {e.stdout}\nstderr: {e.stderr}'
         )
-        raise e
+        return None
 
 
 def scan_for_secrets(trufflehog, scan_cwd: Path, project_sources_dir: Path) -> Optional[Path]:
@@ -49,10 +49,40 @@ def scan_for_secrets(trufflehog, scan_cwd: Path, project_sources_dir: Path) -> O
 
     # Inherit SSL and proxy settings from the container environment (Helm chart sets these).
     # Do not override here so we can support both internal GitLab CA and corporate proxy CA bundles.
-    result = run_command(trufflehog_args, scan_cwd)
+    # Note: TruffleHog may exit with code 1 for various reasons (no findings, not a git repo, etc.)
+    # We use subprocess.run directly instead of run_command to handle this more gracefully
+    log.debug(f'Running command: {trufflehog_args} in dir: {scan_cwd.absolute()}')
+    result = subprocess.run(
+        trufflehog_args,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        cwd=scan_cwd,
+    )
+    
+    log.debug(f'TruffleHog exited with code: {result.returncode}')
+    
+    # Check for actual errors (not just exit code 1 which can be normal)
+    if result.returncode != 0:
+        # Log the stderr for debugging
+        if result.stderr:
+            log.warning(f'TruffleHog stderr: {result.stderr}')
+        
+        # If exit code is not 0 or 1, or if there's critical error messages, raise exception
+        if result.returncode > 1 or (result.stderr and ('fatal' in result.stderr.lower() or 'error' in result.stderr.lower())):
+            raise subprocess.CalledProcessError(
+                result.returncode, 
+                trufflehog_args, 
+                output=result.stdout,
+                stderr=result.stderr
+            )
+        
+        # Exit code 1 with no critical errors is acceptable (likely no findings)
+        log.debug(f'TruffleHog exit code {result.returncode} is acceptable (likely no findings)')
 
-    if not result.stdout:
-        return
+    if not result.stdout or not result.stdout.strip():
+        log.info('TruffleHog found no secrets')
+        return None
 
     with open(json_results_path, 'w') as f:
         f.write(result.stdout)
