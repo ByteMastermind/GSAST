@@ -299,7 +299,7 @@ class GSASTConfig:
                 result['filters'] = filters_dict
         
         if self.scanners:
-            result['scanners'] = [scanner.value for scanner in self.scanners]
+            result['scanners'] = self.scanners
         
         return result
     
