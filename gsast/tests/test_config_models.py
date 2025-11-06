@@ -345,12 +345,13 @@ class TestGSASTConfig:
             GSASTConfig.from_dict(data)
             
     def test_from_dict_invalid_scanner_raises_error(self):
-        """Test that invalid scanner raises error."""
+        """Test that invalid scanner is accepted as string (validation happens at runtime)."""
         data = self.get_valid_github_dict()
         data["scanners"] = ["semgrep", "invalid-scanner"]
         
-        with pytest.raises(ValueError):
-            GSASTConfig.from_dict(data)
+        # Scanners are now just strings, validation happens at runtime
+        config = GSASTConfig.from_dict(data)
+        assert config.scanners == ["semgrep", "invalid-scanner"]
             
     def test_from_dict_empty_scanners_cleaned_up(self):
         """Test that empty scanners list is cleaned up to None."""
