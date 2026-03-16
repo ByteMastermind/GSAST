@@ -10,6 +10,8 @@ from utils.safe_logging import log
 from sastlib.results_splitter import trufflehog_to_sarif_and_split_by_source
 from sastlib.scanner_utils import run_command
 
+CUSTOM_CONFIG_PATH = Path(__file__).resolve().parent.parent / 'configs' / 'trufflehog_config.yaml'
+
 
 def run_scan(project_sources_dir: Path, scan_cwd: Path) -> Optional[Dict[str, Path]]:
     log.info('Running TruffleHog scan')
@@ -46,6 +48,12 @@ def scan_for_secrets(trufflehog, scan_cwd: Path, project_sources_dir: Path) -> O
         f'github={GITHUB_URL}' if (project_sources_dir / '.github').exists() else f'gitlab={GITLAB_URL}',
         '--no-update',
     ]
+
+    if CUSTOM_CONFIG_PATH.exists():
+        trufflehog_args.extend(['--config', str(CUSTOM_CONFIG_PATH)])
+        log.debug(f'Using custom TruffleHog config: {CUSTOM_CONFIG_PATH}')
+    else:
+        log.debug('No custom TruffleHog config found, using built-in detectors only')
 
     # Inherit SSL and proxy settings from the container environment (Helm chart sets these).
     # Do not override here so we can support both internal GitLab CA and corporate proxy CA bundles.

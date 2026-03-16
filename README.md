@@ -207,6 +207,11 @@ Available scanner types:
 | `"trufflehog"` | Secrets detection in git history |
 | `"confusion-hunter"` | Dependency confusion vulnerability detection |
 
+#### Custom TruffleHog Detectors
+
+You can extend TruffleHog with custom secret detectors by placing a configuration file at `gsast/configs/trufflehog_config.yaml`. When this file is present, it is automatically passed to TruffleHog via `--config` and the custom detectors run alongside the built-in ones.
+
+See the [TruffleHog custom detectors documentation](https://trufflesecurity.com/blog/trufflehog-custom-detectors) for the YAML format reference.
 
 ### How Scans Work
 
