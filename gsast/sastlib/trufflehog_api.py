@@ -47,6 +47,13 @@ def scan_for_secrets(trufflehog, scan_cwd: Path, project_sources_dir: Path) -> O
         '--no-update',
     ]
 
+    custom_config_path = Path(__file__).resolve().parent.parent / 'configs' / 'trufflehog_config.yaml'
+    if custom_config_path.exists():
+        trufflehog_args.extend(['--config', str(custom_config_path)])
+        log.debug(f'Using custom TruffleHog config: {custom_config_path}')
+    else:
+        log.debug('No custom TruffleHog config found, using built-in detectors only')
+
     # Inherit SSL and proxy settings from the container environment (Helm chart sets these).
     # Do not override here so we can support both internal GitLab CA and corporate proxy CA bundles.
     # Note: TruffleHog may exit with code 1 for various reasons (no findings, not a git repo, etc.)
