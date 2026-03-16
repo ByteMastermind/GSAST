@@ -10,6 +10,8 @@ from utils.safe_logging import log
 from sastlib.results_splitter import trufflehog_to_sarif_and_split_by_source
 from sastlib.scanner_utils import run_command
 
+CUSTOM_CONFIG_PATH = Path(__file__).resolve().parent.parent / 'configs' / 'trufflehog_config.yaml'
+
 
 def run_scan(project_sources_dir: Path, scan_cwd: Path) -> Optional[Dict[str, Path]]:
     log.info('Running TruffleHog scan')
@@ -47,10 +49,9 @@ def scan_for_secrets(trufflehog, scan_cwd: Path, project_sources_dir: Path) -> O
         '--no-update',
     ]
 
-    custom_config_path = Path(__file__).resolve().parent.parent / 'configs' / 'trufflehog_config.yaml'
-    if custom_config_path.exists():
-        trufflehog_args.extend(['--config', str(custom_config_path)])
-        log.debug(f'Using custom TruffleHog config: {custom_config_path}')
+    if CUSTOM_CONFIG_PATH.exists():
+        trufflehog_args.extend(['--config', str(CUSTOM_CONFIG_PATH)])
+        log.debug(f'Using custom TruffleHog config: {CUSTOM_CONFIG_PATH}')
     else:
         log.debug('No custom TruffleHog config found, using built-in detectors only')
 
