@@ -1,3 +1,4 @@
+import os
 import shutil
 import time
 import subprocess
@@ -11,6 +12,7 @@ from sastlib.results_splitter import trufflehog_to_sarif_and_split_by_source
 from sastlib.scanner_utils import run_command
 
 CUSTOM_CONFIG_PATH = Path(__file__).resolve().parent.parent / 'configs' / 'trufflehog_config.yaml'
+ONLY_VERIFIED = os.getenv('TRUFFLEHOG_ONLY_VERIFIED', 'true').lower() == 'true'
 
 
 def run_scan(project_sources_dir: Path, scan_cwd: Path) -> Optional[Dict[str, Path]]:
@@ -42,12 +44,17 @@ def scan_for_secrets(trufflehog, scan_cwd: Path, project_sources_dir: Path) -> O
         trufflehog,
         'git',
         f'file://{project_sources_dir}',
-        '--only-verified',
         '-j',
         '--verifier',
         f'github={GITHUB_URL}' if (project_sources_dir / '.github').exists() else f'gitlab={GITLAB_URL}',
         '--no-update',
     ]
+
+    if ONLY_VERIFIED:
+        trufflehog_args.append('--only-verified')
+        log.debug('TruffleHog will report only verified secrets')
+    else:
+        log.debug('TruffleHog will report all secrets (verified and unverified)')
 
     if CUSTOM_CONFIG_PATH.exists():
         trufflehog_args.extend(['--config', str(CUSTOM_CONFIG_PATH)])
