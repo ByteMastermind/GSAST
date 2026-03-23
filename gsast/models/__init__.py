@@ -7,7 +7,6 @@ from .config_models import (
     GitHubTargetConfig,
     GitLabTargetConfig,
     ProviderType,
-    ScannerType
 )
 
 __all__ = [
@@ -17,5 +16,4 @@ __all__ = [
     'GitHubTargetConfig',
     'GitLabTargetConfig',
     'ProviderType',
-    'ScannerType'
 ] 

@@ -89,7 +89,7 @@ def start_scan():
     
     # Extract scanner settings with proper defaults
     if scan_config.scanners:
-        scanners = [s.value for s in scan_config.scanners]
+        scanners = scan_config.scanners
     else:
         # Default to all available plugins
         scanners = plugin_manager.get_default_plugins()

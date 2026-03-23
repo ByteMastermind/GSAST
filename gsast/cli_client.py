@@ -4,7 +4,7 @@ import os
 import requests
 import glob
 from urllib.parse import urlencode
-from models.config_models import GSASTConfig, ProviderType, TargetConfig, FiltersConfig, ScannerType
+from models.config_models import GSASTConfig
 
 DEFAULT_CONFIG_FILE_PATH = os.path.join(os.path.expanduser('~'), '.gsast.json')
 
@@ -140,7 +140,7 @@ def split_comma_list_args(cli_args, comma_keys):
 
 def execute_api_request(method, endpoint, config: GSASTConfig, data=None):
     headers = {'API-SECRET-KEY': config.api_secret_key}
-    url = f"{config.base_url}{endpoint}"
+    url = f"{config.base_url.rstrip('/')}{endpoint}"
 
     if method.upper() == 'POST':
         response = requests.post(url, json=data, headers=headers)

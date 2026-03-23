@@ -20,11 +20,6 @@ class ProviderType(str, Enum):
     GITLAB = "gitlab"
 
 
-class ScannerType(str, Enum):
-    """Supported scanner types."""
-    SEMGREP = "semgrep"
-    TRUFFLEHOG = "trufflehog"
-    DEPENDENCY_CONFUSION = "dependency-confusion"
 
 
 @dataclass
@@ -172,7 +167,7 @@ class GSASTConfig:
     target: TargetConfig
     api_secret_key: Optional[str] = None
     filters: Optional[FiltersConfig] = None
-    scanners: Optional[List[ScannerType]] = None
+    scanners: Optional[List[str]] = None  # Scanner plugin IDs (e.g., "semgrep", "ci-scanner")
     
     def __post_init__(self):
         """Validate the complete configuration."""
@@ -239,7 +234,9 @@ class GSASTConfig:
         # Extract scanners configuration (optional)
         scanners = None
         if 'scanners' in data and data['scanners']:
-            scanners = [ScannerType(scanner) for scanner in data['scanners']]
+            # Scanners are now just strings (plugin IDs)
+            # Validation against plugin manager happens at runtime, not at config parse time
+            scanners = [str(scanner) for scanner in data['scanners']]
 
         
         return cls(
@@ -302,7 +299,7 @@ class GSASTConfig:
                 result['filters'] = filters_dict
         
         if self.scanners:
-            result['scanners'] = [scanner.value for scanner in self.scanners]
+            result['scanners'] = self.scanners
         
         return result
     

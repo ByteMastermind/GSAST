@@ -266,8 +266,8 @@ class TestConfigurationValidation:
         
         config = GSASTConfig.from_dict(config_data)
         assert len(config.scanners) == 2
-        assert any(s.value == "semgrep" for s in config.scanners)
-        assert any(s.value == "trufflehog" for s in config.scanners)
+        assert any(s == "semgrep" for s in config.scanners)
+        assert any(s == "trufflehog" for s in config.scanners)
     
     def test_invalid_provider_config(self):
         """Test invalid provider configuration"""
